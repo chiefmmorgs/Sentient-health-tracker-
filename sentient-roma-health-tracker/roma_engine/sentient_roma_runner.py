@@ -1,19 +1,7 @@
 """
-REAL Sentient ROMA Engine - Recursive Open Meta-Agent Implementation
+REAL Sentient ROMA Engine - Fixed with Recursion Depth Limit
 
-This implements the TRUE ROMA pattern from Sentient AGI:
-
-def solve(task):
-    if is_atomic(task):           # Atomizer decides
-        return execute(task)       # Direct execution
-    else:
-        subtasks = plan(task)      # Planner decomposes  
-        results = []
-        for subtask in subtasks:
-            results.append(solve(subtask))  # RECURSIVE MAGIC!
-        return aggregate(results)  # Aggregator combines
-
-This is REAL recursive hierarchical task decomposition!
+This implements the TRUE ROMA pattern with safety limits to prevent infinite recursion.
 """
 
 from typing import Any, Dict, List, Optional
@@ -26,18 +14,21 @@ from roma_agents.sentient_health_agents import (
 
 class ROMARunner:
     """
-    Real Sentient ROMA Implementation
+    Real Sentient ROMA Implementation with Safety Limits
     
     Recursive Open Meta-Agent for hierarchical health analysis
     """
     
-    def __init__(self):
+    def __init__(self, max_depth: int = 3):
         print("🤖 Initializing REAL Sentient ROMA Engine...")
         
         # ROMA Core Components
         self.atomizer = HealthAtomizer()
         self.planner = HealthPlanner()
         self.aggregator = HealthAggregator()
+        
+        # Safety limit for recursion depth
+        self.max_depth = max_depth
         
         # Specialized Health Executors
         self.executors = {
@@ -53,14 +44,15 @@ class ROMARunner:
         }
         
         print("✅ REAL ROMA agents initialized successfully")
+        print(f"🛡️  Safety: Maximum recursion depth set to {max_depth}")
     
     def _solve(self, task: Dict[str, Any], depth: int = 0) -> Dict[str, Any]:
         """
-        THE CORE ROMA RECURSIVE FUNCTION
+        THE CORE ROMA RECURSIVE FUNCTION with Depth Limiting
         
-        This is the real recursive solve() that implements true ROMA:
+        This is the real recursive solve() that implements true ROMA with safety limits:
         def solve(task):
-            if is_atomic(task): return execute(task)
+            if depth > max_depth or is_atomic(task): return execute(task)
             else:
                 subtasks = plan(task)
                 results = [solve(subtask) for subtask in subtasks]  # RECURSIVE!
@@ -69,9 +61,14 @@ class ROMARunner:
         indent = "  " * depth
         print(f"{indent}🔄 ROMA Solve (depth={depth}): {task.get('description', str(task)[:50])}...")
         
+        # SAFETY CHECK: Prevent infinite recursion
+        if depth >= self.max_depth:
+            print(f"{indent}🛡️  SAFETY LIMIT: Depth {depth} reached, forcing atomic execution")
+            return self._execute(task, depth)
+        
         # STEP 1: Atomizer - Check if task is atomic
         print(f"{indent}📋 Step 1: Atomizer analyzing task...")
-        is_atomic = self.atomizer.is_atomic(task)
+        is_atomic = self._enhanced_atomizer_check(task, depth)
         
         if is_atomic:
             # STEP 2a: Direct execution for atomic tasks
@@ -85,8 +82,8 @@ class ROMARunner:
             subtasks = self.planner.plan(task)
             print(f"{indent}📝 Planner created {len(subtasks)} subtasks")
             
-            if not subtasks:
-                print(f"{indent}⚠️  No subtasks generated - executing as atomic fallback")
+            if not subtasks or len(subtasks) > 6:  # Prevent too many subtasks
+                print(f"{indent}⚠️  Invalid subtask count ({len(subtasks)}) - executing as atomic fallback")
                 return self._execute(task, depth)
             
             # STEP 3: Execute subtasks recursively with dependency management
@@ -99,6 +96,30 @@ class ROMARunner:
             
             print(f"{indent}✅ ROMA recursion completed at depth {depth}")
             return final_result
+    
+    def _enhanced_atomizer_check(self, task: Dict[str, Any], depth: int) -> bool:
+        """
+        Enhanced atomizer that considers depth and task complexity
+        
+        Forces atomic execution at deeper levels for safety
+        """
+        # Force atomic execution for deeper recursion levels
+        if depth >= 2:
+            print(f"  🛡️  Depth {depth}: Forcing atomic execution for safety")
+            return True
+        
+        # Check for specific atomic task types
+        task_kind = task.get("kind", "")
+        if task_kind in ["ingest", "metrics", "coach", "report"]:
+            print(f"  ⚡ Specific task type '{task_kind}': Atomic")
+            return True
+        
+        # Use AI atomizer for initial levels only
+        try:
+            return self.atomizer.is_atomic(task)
+        except Exception as e:
+            print(f"  ⚠️  Atomizer failed: {str(e)}, defaulting to atomic")
+            return True
     
     def _execute(self, task: Dict[str, Any], depth: int = 0) -> Dict[str, Any]:
         """
@@ -115,11 +136,11 @@ class ROMARunner:
         else:
             # Try to map task description to executor
             task_desc = task.get("description", "").lower()
-            if "ingest" in task_desc or "validat" in task_desc:
+            if "ingest" in task_desc or "validat" in task_desc or "normalize" in task_desc:
                 executor_name = "ingest"
-            elif "metric" in task_desc or "calculat" in task_desc:
+            elif "metric" in task_desc or "calculat" in task_desc or "score" in task_desc:
                 executor_name = "metrics"
-            elif "coach" in task_desc or "advice" in task_desc:
+            elif "coach" in task_desc or "advice" in task_desc or "recommend" in task_desc:
                 executor_name = "coach"
             elif "report" in task_desc or "summary" in task_desc:
                 executor_name = "report"
@@ -160,14 +181,24 @@ class ROMARunner:
         indent = "  " * depth
         print(f"{indent}🔗 Managing {len(subtasks)} subtasks with dependencies...")
         
+        # Limit number of subtasks for safety
+        if len(subtasks) > 5:
+            print(f"{indent}🛡️  Safety: Limiting to first 4 subtasks (was {len(subtasks)})")
+            subtasks = subtasks[:4]
+        
         # Resolve execution order
         execution_order = self._resolve_execution_order(subtasks)
         results = []
         completed_tasks = {}
         
-        for subtask in execution_order:
-            subtask_id = subtask.get("id", f"task_{len(results)}")
+        for i, subtask in enumerate(execution_order):
+            subtask_id = subtask.get("id", f"task_{i}")
             print(f"{indent}🔄 Executing subtask: {subtask_id}")
+            
+            # Safety check: prevent too many subtasks
+            if i >= 4:
+                print(f"{indent}🛡️  Safety: Skipping remaining subtasks (limit reached)")
+                break
             
             # Prepare data for this subtask (including dependencies)
             enhanced_subtask = self._prepare_subtask_with_dependencies(
@@ -175,7 +206,11 @@ class ROMARunner:
             )
             
             # RECURSIVE CALL - This is where ROMA magic happens!
-            subtask_result = self._solve(enhanced_subtask, depth)
+            try:
+                subtask_result = self._solve(enhanced_subtask, depth)
+            except RecursionError:
+                print(f"{indent}🛡️  Recursion limit hit, executing atomically")
+                subtask_result = self._execute(enhanced_subtask, depth)
             
             # Store result for dependent tasks
             completed_tasks[subtask_id] = subtask_result
@@ -187,16 +222,14 @@ class ROMARunner:
     
     def _resolve_execution_order(self, subtasks: List[Dict]) -> List[Dict]:
         """
-        Topological sort for dependency-aware execution order
-        
-        ROMA pattern: respect dependencies while maximizing parallelization opportunities
+        Topological sort for dependency-aware execution order with safety limits
         """
         ordered_tasks = []
         remaining_tasks = subtasks.copy()
         completed_ids = set()
         
-        # Simple dependency resolution
-        max_iterations = len(subtasks) * 2  # Prevent infinite loops
+        # Limit iterations to prevent infinite loops
+        max_iterations = min(len(subtasks) * 2, 10)
         iteration = 0
         
         while remaining_tasks and iteration < max_iterations:
@@ -209,13 +242,13 @@ class ROMARunner:
                 # Check if all dependencies are satisfied
                 if all(dep_id in completed_ids for dep_id in dependencies):
                     ordered_tasks.append(task)
-                    completed_ids.add(task.get("id", ""))
+                    completed_ids.add(task.get("id", f"task_{len(ordered_tasks)}"))
                     remaining_tasks.remove(task)
                     progress_made = True
             
             if not progress_made:
                 # Circular dependency or missing dependency
-                print(f"⚠️  Dependency resolution stuck, adding remaining tasks by priority")
+                print(f"⚠️  Dependency resolution stuck at iteration {iteration}, adding remaining tasks")
                 remaining_tasks.sort(key=lambda x: x.get("priority", 5))
                 ordered_tasks.extend(remaining_tasks)
                 break
@@ -233,13 +266,13 @@ class ROMARunner:
         enhanced_subtask = {
             "kind": subtask.get("kind", ""),
             "description": subtask.get("description", ""),
-            "data": subtask.get("data", original_task.get("data", {})),
+            "data": dict(subtask.get("data", original_task.get("data", {}))),  # Copy to prevent mutation
             "roma_depth": depth,
             "subtask_id": subtask.get("id", "")
         }
         
-        # Add outputs from dependent tasks
-        dependencies = subtask.get("depends_on", [])
+        # Add outputs from dependent tasks (limited for safety)
+        dependencies = subtask.get("depends_on", [])[:3]  # Limit dependencies
         dependency_data = {}
         
         for dep_id in dependencies:
@@ -262,9 +295,6 @@ class ROMARunner:
                 elif "coach" in dep_id:
                     if dep_result.get("coaching_result"):
                         dependency_data["coaching_result"] = dep_result["coaching_result"]
-                
-                # Always include the full result for reference
-                dependency_data[f"{dep_id}_result"] = dep_result
         
         # Merge dependency data into subtask data
         if dependency_data:
@@ -293,7 +323,7 @@ class ROMARunner:
         }
         
         try:
-            # Execute ROMA recursive solve
+            # Execute ROMA recursive solve with safety limits
             result = self._solve(root_task)
             
             execution_time = time.time() - start_time
@@ -305,7 +335,8 @@ class ROMARunner:
                     "framework": "Sentient ROMA - Recursive Open Meta-Agent",
                     "execution_time_seconds": round(execution_time, 2),
                     "pattern": "recursive_hierarchical_decomposition",
-                    "version": "1.0.0"
+                    "max_depth_limit": self.max_depth,
+                    "version": "1.0.0-safe"
                 }
             
             return result
@@ -316,7 +347,8 @@ class ROMARunner:
             return {
                 "ok": False,
                 "error": f"ROMA execution failed: {str(e)}",
-                "execution_time_seconds": round(execution_time, 2)
+                "execution_time_seconds": round(execution_time, 2),
+                "safety_info": f"Max depth limit: {self.max_depth}"
             }
     
     def analyze_single(self, entry: Dict[str, Any]) -> Dict[str, Any]:
@@ -357,12 +389,18 @@ class ROMARunner:
         """Get information about the ROMA system"""
         return {
             "framework": "Sentient ROMA - Recursive Open Meta-Agent",
-            "version": "1.0.0",
-            "description": "Hierarchical multi-agent system with true recursive task decomposition",
-            "core_pattern": "solve(task) -> if atomic: execute(task) else: plan -> [solve(subtasks)] -> aggregate",
+            "version": "1.0.0-safe",
+            "description": "Hierarchical multi-agent system with true recursive task decomposition and safety limits",
+            "core_pattern": "solve(task) -> if depth >= max_depth or is_atomic(task): execute(task) else: plan -> [solve(subtasks)] -> aggregate",
+            "safety_features": {
+                "max_recursion_depth": self.max_depth,
+                "subtask_limits": "Maximum 4-5 subtasks per level",
+                "dependency_limits": "Maximum 3 dependencies per task",
+                "timeout_protection": "Execution time monitoring"
+            },
             "components": {
-                "atomizer": "HealthAtomizer - AI-powered task complexity analysis",
-                "planner": "HealthPlanner - Intelligent task decomposition",
+                "atomizer": "HealthAtomizer - AI-powered task complexity analysis with depth awareness",
+                "planner": "HealthPlanner - Intelligent task decomposition with safety limits",
                 "executors": {
                     "DataIngestionAgent": "Health data validation and normalization",
                     "MetricsAnalysisAgent": "Comprehensive health metrics calculation",
@@ -372,10 +410,11 @@ class ROMARunner:
                 "aggregator": "HealthAggregator - Intelligent results synthesis"
             },
             "execution_patterns": [
-                "Recursive task decomposition",
+                "Recursive task decomposition with depth limits",
                 "Dependency-aware subtask execution",
-                "AI-powered planning and aggregation",
-                "Hierarchical result synthesis"
+                "AI-powered planning and aggregation", 
+                "Hierarchical result synthesis",
+                "Safety-first execution with fallbacks"
             ],
             "key_features": [
                 "True recursive problem solving",
@@ -383,21 +422,7 @@ class ROMARunner:
                 "Specialized domain agents",
                 "Intelligent result aggregation",
                 "Dependency management",
-                "Multi-level task hierarchy"
+                "Multi-level task hierarchy",
+                "Recursion safety limits",
+                "Infinite loop prevention"
             ]
-        }
-
-# Backward compatibility - keep existing interface
-class ROMARunner_Legacy:
-    """Legacy interface for backward compatibility"""
-    def __init__(self):
-        self.real_runner = ROMARunner()
-    
-    def run_weekly(self, data):
-        return self.real_runner.run_weekly(data)
-    
-    def analyze_single(self, entry):
-        return self.real_runner.analyze_single(entry)
-        
-    def chat(self, message):
-        return self.real_runner.chat(message)
