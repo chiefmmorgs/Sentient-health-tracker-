@@ -1,0 +1,15 @@
+services:
+  roma-health:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: sentient-roma-health:latest
+    container_name: sentient-roma-health
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
+

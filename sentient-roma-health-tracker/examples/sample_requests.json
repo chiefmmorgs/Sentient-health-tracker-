@@ -1,0 +1,17 @@
+{
+  "weekly-report": {
+    "data": {
+      "steps": 72000,
+      "sleep_hours": 49,
+      "workouts": 4,
+      "water_liters": 14
+    }
+  },
+  "analyze": {
+    "heart_rate": [65, 72, 70],
+    "calories": 14500
+  },
+  "chat": {
+    "message": "Help me improve sleep"
+  }
+}
