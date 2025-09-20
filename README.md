@@ -1,283 +1,185 @@
-Sentient ROMA Health Tracker
+🤖 Sentient ROMA Health Tracker
 
-An open-source multi-agent health intelligence system built on the ROMA pattern (Atomizer → Planner → Executors → Aggregator).
+Advanced AI-powered health analysis using the Sentient AGI ROMA framework.
+This project demonstrates a practical multi-agent system for health tracking using the ROMA pattern:
 
-This isn’t just a script — it’s a working demonstration of how multi-agent orchestration + LLMs can power real-world applications.
-
-🚩 Why This Matters
-
-Shows how to operationalize multi-agent systems (not just theory).
-
-Demonstrates health intelligence as a practical use case.
-
-Provides a template: swap in new agents for finance, education, productivity, or research.
-
-Fully packaged: FastAPI + SQLite + Docker → easy to run anywhere.
-
-⚙️ What’s Inside
-
-ROMA Framework
-
-Atomizer → decide if a task is simple or complex.
-
-Planner → build a sequence of subtasks.
-
-Executors (Agents):
-
-DataIngestionAgent → validate inputs.
-
-MetricsAnalysisAgent → calculate scores, ask LLM for insights.
-
-CoachingAgent → personalized GPT-based advice.
-
-ReportingAgent → generate structured weekly reports.
-
-Aggregator → merge results and respond.
-
-FastAPI service with endpoints:
-/analyze, /weekly-report, /chat, /reports, /health, /roma-info
-
-Persistence → SQLite storage for reports.
-
-Security → API key protection for sensitive endpoints.
-
-Deployment → Docker Compose for one-command setup.
-
-🔮 Use Cases
-
-Personal Health Assistant
-Weekly summaries, coaching tips, progress tracking.
-
-Wellness App Backend
-Plug wearable or mobile app data into the API.
-
-Research & Experimentation
-A sandbox for exploring multi-agent orchestration with GPT.
-
-Community Forks
-Adapt ROMA for finance, productivity, study coaches, or team analytics.
+Atomizer → Planner → Executors (Ingest / Metrics / Coach / Report) → Aggregator
 
 
-Getting Started for Beginners
-What you need first
 
-Git installed
 
-Docker Desktop installed and running
 
-Optional alternative without Docker: Python 3.11+, pip, and venv
 
-If you’re on Windows, use PowerShell for the commands below.
 
-1) Clone the repo
 
-Linux/macOS:
+✨ Features
 
-cd ~
+ROMA framework for recursive task decomposition.
+
+Agents
+
+DataIngestionAgent – validates and normalizes inputs.
+
+MetricsAnalysisAgent – computes basic scores (activity, sleep, hydration, workouts) and asks an LLM for insights.
+
+CoachingAgent – personalized tips via GPT (OpenRouter).
+
+ReportingAgent – structured weekly summary, saved to SQLite.
+
+FastAPI service with clean REST endpoints.
+
+SQLite persistence for saved reports.
+
+API key guard for /health and /reports.
+
+Dockerized with Compose for one-command deploy.
+
+🚀 Quick Start
+1) Clone
 git clone https://github.com/chiefmmorgs/Sentient-health-tracker-.git
 cd Sentient-health-tracker-
-ls
 
+2) Environment
 
-Windows PowerShell:
+Create a .env in the project root:
 
-cd $HOME
-git clone https://github.com/chiefmmorgs/Sentient-health-tracker-.git
-cd Sentient-health-tracker-
-dir
-
-
-You should see files like: docker/, requirements.txt, sentient_roma_api.py, roma_engine/, roma_agents/, storage/.
-
-2) Create your .env file
-
-This app reads secrets from a .env file in the project root.
-
-Create .env with these keys:
-
-# LLM provider key (MV key)
 OPENROUTER_API_KEY=sk-your-openrouter-key
-
-# Model to use
 DEFAULT_MODEL=gpt-3.5-turbo
-
-# App API key for protected endpoints
 API_KEY=your-secret-key
-
-# Database path inside the container
 DB_PATH=/app/data/db.sqlite
 
 
-Notes
+Keep .env private (it’s already in .gitignore).
 
-OPENROUTER_API_KEY is your “MV key.” Create one in your OpenRouter account and paste it here.
-
-Choose a strong random value for API_KEY. You will send this in the X-API-Key header for protected routes.
-
-.env is already in .gitignore. Do not commit it.
-
-3) Start the API with Docker
-
-Make sure Docker Desktop is running.
-
-Linux/macOS/Windows:
-
+3) Run with Docker Compose
 docker compose up -d --build
 
+4) Test
 
-If your Docker uses the old syntax:
-
-docker-compose up -d --build
-
-
-Check logs:
-
-docker compose logs -f
-
-
-You should see Uvicorn running on http://0.0.0.0:8000
-
-Stop later:
-
-docker compose down
-
-4) Open the API docs
-
-Open this in your browser:
-
-http://127.0.0.1:8000/docs
-
-
-You will see all endpoints with try-it-out buttons.
-
-5) Quick tests from the terminal
-
-Health check (protected)
-
-Replace your-secret-key with the value you put in .env.
-
-Linux/macOS:
+Health (protected):
 
 curl -H "X-API-Key: your-secret-key" http://127.0.0.1:8000/health
 
 
-Windows PowerShell:
-
-curl -Headers @{'X-API-Key'='your-secret-key'} http://127.0.0.1:8000/health
-
-
-Weekly report (runs the full ROMA pipeline)
-Linux/macOS:
+Weekly report:
 
 curl -X POST http://127.0.0.1:8000/weekly-report \
   -H "Content-Type: application/json" \
   -d '{"data":{"steps":72000,"sleep_hours":49,"workouts":4,"water_liters":14}}'
 
 
-Windows PowerShell:
-
-$body = @{ data = @{ steps = 72000; sleep_hours = 49; workouts = 4; water_liters = 14 } } | ConvertTo-Json
-curl -Method Post -Uri http://127.0.0.1:8000/weekly-report -ContentType "application/json" -Body $body
-
-
-OpenAPI docs try-it-out tips
-
-/health and /reports endpoints need the X-API-Key header. In the docs UI, click Authorize or add the header in each request.
-
-6) Using Postman (optional)
-
-Create a new request to GET http://127.0.0.1:8000/health
-
-Add header:
-
-Key: X-API-Key
-
-Value: your-secret-key
-
-Send. You should get a JSON status.
-
-7) Update to the latest version
-cd Sentient-health-tracker-
-git pull origin main
-docker compose up -d --build
-
-8) Run without Docker (optional)
-
-Use this if you prefer Python locally.
-
-Linux/macOS:
-
-python3 -m venv .venv
-source .venv/bin/activate
-pip install --upgrade pip
-pip install -r requirements.txt
-
-# keep your .env in the project root
-# start the API
-uvicorn sentient_roma_api:app --reload --host 127.0.0.1 --port 8000
-
-
-Windows PowerShell:
-
-python -m venv .venv
-. .\.venv\Scripts\Activate.ps1
-pip install --upgrade pip
-pip install -r requirements.txt
-
-uvicorn sentient_roma_api:app --reload --host 127.0.0.1 --port 8000
-
-
-Then open:
-
+Open docs in your browser:
 http://127.0.0.1:8000/docs
 
-9) Common errors and fixes
+🔗 Endpoints
 
-401 Unauthorized on /health or /reports
-Add header X-API-Key with the same value as API_KEY in .env.
+GET /health — API+DB status (requires X-API-Key)
 
-500 error about missing OPENROUTER_API_KEY
-Add OPENROUTER_API_KEY to .env. Restart Docker:
+GET /roma-info — ROMA architecture summary
 
-docker compose down && docker compose up -d --build
+POST /analyze — Quick single-entry analysis
 
+POST /weekly-report — Full ROMA pipeline (ingest → metrics → coach → report)
 
-Port 8000 already in use
-Stop the app using the port or change the port:
+POST /chat — AI coaching on an input message
 
-docker compose down
-# edit docker-compose.yml to map a different host port, e.g. "8080:8000"
-docker compose up -d --build
-# then open http://127.0.0.1:8080/docs
+GET /reports — List saved reports (requires X-API-Key)
 
+GET /reports/{id} — Retrieve a saved report (requires X-API-Key)
 
-.env not loaded in Docker
-Ensure .env is in the project root (same folder as docker-compose.yml). Rebuild:
-
-docker compose up -d --build
-
-
-Database not persisting
-Make sure the data/ folder exists and is mounted by Compose. DB_PATH should be /app/data/db.sqlite.
-
-10) What to do next
-
-Explore endpoints in /docs
-
-Try /analyze and /chat for quick insights and coaching
-
-Check /reports to see saved weekly reports
-
-Secure deployment with HTTPS and a reverse proxy if you expose it on the internet
-
-11) Quick checklist before sharing with others
-
-README explains setup and usage
-
-.env.example added with placeholder keys
-
-MIT license present
-
-Docker works on a fresh machine
+🧠 How It Works (ROMA)
+flowchart LR
+    A[User Request] --> B{Atomizer}
+    B -- atomic --> E[Executor]
+    B -- complex --> C[Planner]
+    C --> E1[Ingest Agent]
+    E1 --> E2[Metrics Agent]
+    E2 --> E3[Coaching Agent]
+    E3 --> E4[Reporting Agent]
+    E & E1 & E2 & E3 & E4 --> F[Aggregator]
+    F --> G[Response + (optional) Save to SQLite]
 
 
+Atomizer: decides if the task is atomic or needs decomposition.
+
+Planner: creates an ordered plan (ingest → metrics → coach → report).
+
+Executors: domain agents perform their part; Metrics/Coach/Report can call GPT via OpenRouter.
+
+Aggregator: merges results into the final response.
+
+🧪 Example Use Cases
+
+Personal Health Assistant – weekly summaries & advice.
+
+Wellness App Backend – mobile/web apps can call these endpoints.
+
+Research / Learning – a concrete example of multi-agent orchestration.
+
+Fork & Repurpose – swap health agents for finance, study, productivity, etc.
+
+🛠️ For Developers
+
+Fork it → build your own agent set in roma_agents/.
+
+Extend the planner/aggregator for new workflows.
+
+Persist reports with SQLite (mounted volume via ./data).
+
+Secure endpoints using the X-API-Key header.
+
+Deploy on a VPS: Docker + .env + reverse proxy (optional).
+
+Recommended contributions:
+
+Real wearable integrations (Fitbit/HealthKit/Garmin).
+
+Frontend dashboard (Next.js/React) calling this API.
+
+More agents (nutrition, recovery, stress).
+
+📦 Project Structure (core)
+.
+├── sentient_roma_api.py         # FastAPI entrypoint
+├── roma_engine/
+│   └── sentient_roma_runner.py  # ROMA runner/orchestration
+├── roma_agents/
+│   └── sentient_health_agents.py# Agents (ingest/metrics/coach/report)
+├── storage/
+│   └── db.py                    # SQLite helpers
+├── docker/
+│   ├── Dockerfile
+│   └── docker-compose.yml
+├── requirements.txt
+├── data/                        # Mounted DB folder (persisted)
+└── LICENSE
+
+🔐 Security
+
+Set API_KEY in .env to require X-API-Key for /health and /reports.
+
+Keep .env out of version control.
+
+If deploying publicly, put a reverse proxy (e.g., Nginx) with HTTPS.
+
+🧾 License
+
+MIT — free to use, modify, and distribute. See LICENSE
+.
+
+How to update your README
+
+Open the file:
+
+nano README.md
+
+
+Delete everything inside and paste the cleaned-up version above.
+
+Save (CTRL+O, Enter) and exit (CTRL+X).
+
+Commit & push:
+
+git add README.md
+git commit -m "docs: clean up README formatting and code blocks"
+git push origin main
