@@ -33,3 +33,15 @@ This project demonstrates a practical multi-agent system for health tracking usi
 ```bash
 git clone https://github.com/chiefmmorgs/Sentient-health-tracker-.git
 cd Sentient-health-tracker-
+
+2) Environment
+
+Create .env in the project root:
+
+OPENROUTER_API_KEY=sk-your-openrouter-key
+DEFAULT_MODEL=gpt-3.5-turbo
+API_KEY=your-secret-key
+DB_PATH=/app/data/db.sqlite
+
+
+Keep .env private (it’s already in .gitignore).
