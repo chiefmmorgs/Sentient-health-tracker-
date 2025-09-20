@@ -1,0 +1,3 @@
+[submodule "external/ROMA"]
+	path = external/ROMA
+	url = https://github.com/sentient-agi/ROMA
