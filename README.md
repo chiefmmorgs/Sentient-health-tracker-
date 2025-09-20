@@ -29,9 +29,6 @@ This project demonstrates a practical multi-agent system for health tracking usi
 
 ## 🚀 Quick Start
 
-
-## 🚀 Quick Start
-
 ### 1) Clone
 
 ```bash
