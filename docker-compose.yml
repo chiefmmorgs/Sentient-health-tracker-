@@ -1,18 +1,32 @@
-# docker-compose.yml
+version: "3.9"
 services:
-  health-tracker:
-    build: .
-    ports:
-      - "8000:8000"
-    environment:
-      - USE_ROMA_FRAMEWORK=true
-      - ROMA_CONFIG_PATH=/app/roma_config/health_agents.yaml
-      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - DEFAULT_MODEL=${DEFAULT_MODEL}
-      - DB_PATH=/app/data/db.sqlite
+  roma-backend:
+    build: ./vendor/ROMA/docker/backend
+    env_file: ./.env
     volumes:
-      - ./data:/app/data
-      - ./roma_config:/app/roma_config
-      - ./external/ROMA:/app/external/ROMA:ro
+      - ./sentient.yaml:/app/sentient.yaml:ro
+      - ./roma_config:/app/roma_config:ro
+    ports:
+      - "8001:8001"
     restart: unless-stopped
 
+  roma-frontend:
+    build: ./vendor/ROMA/frontend
+    env_file: ./.env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - roma-backend
+    restart: unless-stopped
+
+  api:
+    build: .
+    env_file: ./.env
+    volumes:
+      - ./data:/app/data
+      - ./roma_config:/app/roma_config:ro
+    ports:
+      - "8000:8000"
+    depends_on:
+      - roma-backend
+    restart: unless-stopped

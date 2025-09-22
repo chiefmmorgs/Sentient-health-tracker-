@@ -1,0 +1,18 @@
+# docker-compose.yml
+services:
+  health-tracker:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - USE_ROMA_FRAMEWORK=true
+      - ROMA_CONFIG_PATH=/app/roma_config/health_agents.yaml
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - DEFAULT_MODEL=${DEFAULT_MODEL}
+      - DB_PATH=/app/data/db.sqlite
+    volumes:
+      - ./data:/app/data
+      - ./roma_config:/app/roma_config
+      - ./external/ROMA:/app/external/ROMA:ro
+    restart: unless-stopped
+
