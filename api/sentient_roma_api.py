@@ -1,51 +1,33 @@
 from fastapi import FastAPI, HTTPException
-from typing import Dict, Any
-from roma_bridge.roma_config import RomaBridge
-from storage.db import HealthDatabase
+from pydantic import BaseModel
+from typing import Any, Dict
 
-app = FastAPI(title="Sentient Health Tracker - ROMA Hybrid")
-roma_bridge = RomaBridge()
-db = HealthDatabase()
+try:
+    from roma_engine.sentient_roma_runner import solve as roma_solve
+except Exception:
+    roma_solve = None
 
-@app.get("/roma-info")
-async def get_roma_info():
-    return {
-        "framework": "ROMA (hybrid-local)",
-        "version": "hybrid",
-        "agents": ["data_ingestion", "metrics_analysis", "coaching", "reporting"],
-        "task_flows": ["weekly_health_analysis", "quick_analysis", "coaching_session"]
-    }
+app = FastAPI(title="Sentient Health Tracker (ROMA)")
 
-@app.post("/analyze")
-async def quick_analysis(data: Dict[str, Any]):
-    try:
-        roma_result = await roma_bridge.execute_health_task(
-            task_type="quick_analysis",
-            data=data or {}
-        )
-        return roma_result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+class WeeklyData(BaseModel):
+    data: Dict[str, Any]
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 
 @app.post("/weekly-report")
-async def create_weekly_report(data: Dict[str, Any]):
+async def weekly_report(payload: WeeklyData):
+    if roma_solve is None:
+        raise HTTPException(status_code=500, detail="ROMA runtime not available")
     try:
-        roma_result = await roma_bridge.execute_health_task(
-            task_type="weekly_health_analysis",
-            data=data or {}
-        )
-        report_id = await db.save_report(roma_result)
-        return {"report_id": report_id, "roma_result": roma_result, "status": "success"}
+        result = await roma_solve("health_weekly_report", {"data": payload.data})
+        return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
 
-@app.post("/chat")
-async def coaching_chat(message: Dict[str, Any]):
-    try:
-        roma_result = await roma_bridge.execute_health_task(
-            task_type="coaching_session",
-            data=message or {}
-        )
-        return roma_result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@app.post("/normalize")
+async def normalize(payload: WeeklyData):
+    if roma_solve is None:
+        raise HTTPException(status_code=500, detail="ROMA runtime not available")
+    return await roma_solve("health_weekly_report", {"data": payload.data})
