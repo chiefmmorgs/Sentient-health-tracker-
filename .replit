@@ -1,4 +1,4 @@
-modules = ["bash", "python-3.11"]
+modules = ["bash", "python-3.11", "nodejs-20"]
 [agent]
 expertMode = true
 
@@ -33,10 +33,6 @@ outputType = "webview"
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 46339
-externalPort = 3000
 
 [deployment]
 deploymentTarget = "autoscale"
