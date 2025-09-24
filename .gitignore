@@ -1,9 +1,29 @@
-# Virtual envs
-.venv/
-
-# Environment variables
-.env
-
-# Python cache
+# Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+*.db
+
+# Virtual envs
+.venv/
+venv/
+
+# Docker
+*.pid
+*.log
+*.tmp
+*.sock
+*.swp
+.dockerignore
+
+# Local env / secrets
+.env
+.env.*
+!env.example   # <-- you can keep a sample file without real keys
+
+# IDE
+.vscode/
+.idea/
+
+.env

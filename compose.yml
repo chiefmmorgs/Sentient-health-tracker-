@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   roma:
     build:
@@ -9,13 +7,14 @@ services:
       - "5000:5000"
     environment:
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-    networks: [app-network]
+    networks:
+      - app-network
     restart: unless-stopped
 
   health-tracker:
     build:
       context: .
-      dockerfile: Dockerfile  # see Dockerfile below
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     environment:
@@ -23,11 +22,16 @@ services:
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
     depends_on:
       - roma
-    networks: [app-network]
+    networks:
+      - app-network
     restart: unless-stopped
-    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    command: ["uvicorn","main:app","--host","0.0.0.0","--port","8000"]
+    healthcheck:
+      test: ["CMD","curl","-fsS","http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
 
 networks:
   app-network:
     driver: bridge
-
