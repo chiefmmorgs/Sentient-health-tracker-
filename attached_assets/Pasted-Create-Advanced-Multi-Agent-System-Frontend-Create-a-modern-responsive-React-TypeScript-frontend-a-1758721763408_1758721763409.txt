@@ -1,0 +1,179 @@
+Create Advanced Multi-Agent System Frontend
+Create a modern, responsive React TypeScript frontend application that interfaces with two sophisticated AI agent systems:
+Backend Systems Integration
+Primary System: ROMA Meta-Agent Framework
+
+Base URL: http://localhost:5000 (or your deployed URL)
+Architecture: Recursive multi-agent system (Atomizer → Planner → Executors → Aggregator)
+Core Agents:
+
+General ChatGPT Search Agent
+Research Agent (complex research with parallel processing)
+Financial Analysis Agent (DeFi, blockchain, market data)
+
+
+
+Secondary System: Sentient Health Tracker
+
+Base URL: http://localhost:8000 (or your deployed URL)
+API Endpoints:
+
+GET /health (requires X-API-Key header)
+GET /roma-info
+POST /analyze (quick health analysis)
+POST /weekly-report (full ROMA pipeline)
+POST /chat (AI health coaching)
+GET /reports (requires X-API-Key)
+GET /reports/{id} (requires X-API-Key)
+
+
+
+Frontend Requirements
+Core Features
+
+Multi-System Dashboard
+
+Toggle between ROMA agents and Health Tracker
+Real-time agent status indicators
+System architecture visualization
+
+
+ROMA Agent Interface
+
+Agent selection (General/Research/Financial)
+Task input with complexity indicators
+Real-time recursive task breakdown visualization
+Parallel execution progress tracking
+Results aggregation display
+
+
+Health Tracker Interface
+
+Health data input forms (steps, sleep, workouts, water)
+Weekly report generation
+AI coaching chat interface
+Report history with search/filter
+Health metrics visualization
+
+
+Advanced UI Components
+
+Interactive agent workflow diagrams
+Real-time WebSocket connections for live updates
+Progressive task decomposition tree
+Results comparison and analysis
+Data export functionality
+
+
+
+Technical Stack
+
+Framework: React 18+ with TypeScript
+Styling: Tailwind CSS with component library (shadcn/ui preferred)
+State Management: Zustand or React Query
+WebSocket: Socket.io-client or native WebSocket
+Charts: Recharts or Chart.js
+HTTP Client: Axios with interceptors
+UI Components:
+
+Responsive layout with mobile support
+Dark/light theme toggle
+Loading states and skeletons
+Error boundaries and toast notifications
+
+
+
+Page Structure
+1. Landing Page
+
+Hero section explaining multi-agent capabilities
+Live demo with sample queries
+Architecture overview with interactive diagrams
+Quick start guide
+
+2. ROMA Agent Dashboard
+/roma
+├── Agent Selection Panel
+├── Task Input Interface 
+├── Real-time Execution Viewer
+│   ├── Atomizer decisions
+│   ├── Planner breakdown
+│   ├── Parallel executor status
+│   └── Aggregator results
+├── Results Display
+└── History & Analytics
+3. Health Tracker Dashboard
+/health
+├── Quick Analysis Form
+├── Weekly Report Builder
+├── AI Coach Chat
+├── Reports Gallery
+├── Health Metrics Charts
+└── Data Management
+4. System Integration Hub
+/dashboard
+├── Multi-system overview
+├── Cross-system analytics
+├── API status monitoring
+├── Performance metrics
+└── Configuration panel
+Key Interactive Features
+ROMA Visualization
+
+Task Decomposition Tree: Interactive flowchart showing how complex tasks break down
+Agent Execution Timeline: Real-time progress of parallel agent execution
+Result Synthesis View: How sub-results aggregate into final answers
+Agent Performance Metrics: Success rates, execution times, complexity handling
+
+Health Tracker Visualization
+
+Health Score Dashboard: Visual progress indicators
+Weekly Trends: Charts showing improvement over time
+AI Coaching Interface: Chat-style interaction with context awareness
+Report Generation: Step-by-step ROMA pipeline visualization
+
+API Integration Requirements
+ROMA System Integration
+javascript// Example agent execution call
+const executeAgent = async (agentType, query, options) => {
+  const response = await axios.post(`${ROMA_BASE_URL}/execute`, {
+    agent: agentType, // 'general' | 'research' | 'financial'
+    task: query,
+    streaming: true,
+    options: options
+  });
+  return response.data;
+};
+Health Tracker Integration
+javascript// Example health analysis
+const analyzeHealth = async (healthData) => {
+  const response = await axios.post(`${HEALTH_BASE_URL}/weekly-report`, {
+    data: healthData
+  });
+  return response.data;
+};
+
+// Protected endpoints
+const getReports = async (apiKey) => {
+  const response = await axios.get(`${HEALTH_BASE_URL}/reports`, {
+    headers: { 'X-API-Key': apiKey }
+  });
+  return response.data;
+};
+Real-time Features
+
+WebSocket Connection: Live updates during agent execution
+Streaming Responses: Show intermediate results as they arrive
+Progress Tracking: Visual indicators for long-running tasks
+Notifications: System alerts and task completion updates
+
+Advanced UI/UX Requirements
+
+Responsive Design: Mobile-first with tablet/desktop optimization
+Performance: Lazy loading, code splitting, optimized bundles
+Accessibility: WCAG 2.1 compliance with keyboard navigation
+Error Handling: Graceful degradation with retry mechanisms
+Loading States: Skeleton screens and progress indicators
+Data Persistence: Local storage for user preferences and drafts
+
+Security...

@@ -4,3 +4,10 @@ httpx
 pydantic
 
 sqlalchemy>=2.0
+fastapi
+flask
+httpx
+litellm
+pydantic
+sqlalchemy
+uvicorn
