@@ -31,3 +31,7 @@ venv/
 # sqlite data
 data/*.db
 data/*.db-journal
+
+# editor/backup files
+*.bak
+*.bak.*
