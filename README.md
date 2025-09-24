@@ -1,103 +1,179 @@
 # 🤖 Sentient ROMA Health Tracker
 
 **Advanced AI-powered health analysis using the Sentient AGI ROMA framework.**  
-This project demonstrates a practical multi-agent system for health tracking using the ROMA pattern:
+A practical, self-hosted multi-agent system that turns raw weekly metrics into clear human reports, ad-hoc insights, and free-form coaching—**with your data stored locally** and protected by an API key.
 
+**ROMA Pattern:**  
 **Atomizer → Planner → Executors (Ingest / Metrics / Coach / Report) → Aggregator**
 
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.104%2B-009688)](#)
+[![FastAPI](https://img.shields.io/badge/FastAPI-ready-009688)](#)
 [![Python](https://img.shields.io/badge/Python-3.11-blue)](#)
-[![Docker](https://img.shields.io/badge/Docker-ready-2496ED)](#)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED)](#)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
 
-## ✨ Features
+## ✨ What You Built (and Why)
 
-- **ROMA framework** for recursive task decomposition.
-- **Agents**
-  - **DataIngestionAgent** – validates and normalizes inputs.
-  - **MetricsAnalysisAgent** – computes basic scores (activity, sleep, hydration) and asks an LLM for insights.
-  - **CoachingAgent** – personalized tips via GPT (OpenRouter).
-  - **ReportingAgent** – structured weekly summary, saved to SQLite.
-- **FastAPI service** with clean REST endpoints.
-- **SQLite persistence** for saved reports.
-- **API key guard** for `/health` and `/reports`.
-- **Dockerized** with Compose for one-command deploy.
+- **Health Tracker (FastAPI)** – your public API with:
+  - `/weekly-report` – concise weekly summaries with daily averages + 2–3 actionable tips
+  - `/analyze` – structured insights (flags, score, recommendations)
+  - `/chat` – free-form AI coaching (“plan my week”, etc.)
+  - `/reports` – saved outputs in **SQLite**, browsable via API (and optional mini admin page)
+  - **Security** – API key guard for sensitive routes and (optionally) save actions
+  - **Fallbacks** – still works even if the LLM isn’t reachable
+- **ROMA Service** – your “sentient rumor”/meta-agent layer that decomposes problems and calls the LLM (OpenRouter). It’s the quiet power under the hood; when it’s unavailable, Health Tracker falls back to local logic so you always get results.
+- **Persistence** – reports saved to `./data/health.db` on your machine via a Docker bind mount.
+
+This setup gives you a **private, reliable** health backend you can front with a tiny website or a Telegram bot.
 
 ---
 
-## 🚀 Quick Start
+## 🏗️ How It Connects
 
-### 1) Clone
+[ Client / Browser / Telegram / cURL ]
+|
+v
+FastAPI "health-tracker" (http://localhost:8000
+)
+├─ /weekly-report ← generate & (optionally) save weekly summary
+├─ /analyze ← structured metrics insights
+├─ /chat ← free-form coaching
+└─ /reports (key) ← list/get/delete saved outputs (SQLite)
+|
+v
+ROMA service (http://roma:5000/api/simple
+)
+├─ /status
+├─ /execute
+└─ /analysis
+|
+v
+OpenRouter LLM (uses your OPENROUTER_API_KEY)
 
-```bash
-git clone https://github.com/chiefmmorgs/Sentient-health-tracker-.git
-cd Sentient-health-tracker-
-```   
+---
 
-### 2) Environment
+## 🔎 What Is ROMA (the undertone)
 
-Create a `.env` file in the project root:
+**ROMA** is a **meta-agent framework** that uses a recursive plan–execute loop. It decides when a request is atomic vs. complex, decomposes tasks, executes subtasks (in parallel where possible), and aggregates results.
 
-```env
-OPENROUTER_API_KEY=sk-your-openrouter-key
-DEFAULT_MODEL=gpt-3.5-turbo
-API_KEY=your-secret-key
-DB_PATH=/app/data/db.sqlite
-```  
-
-Keep `.env` private (it’s already in `.gitignore`).
-
-
-3) Run with Docker Compose
-```bash
-docker compose up -d --build
+ ```python
+def solve(task):
+    if is_atomic(task):           # Atomizer
+        return execute(task)      # Executor (LLM/tool)
+    else:
+        subtasks = plan(task)     # Planner
+        results = [solve(st) for st in subtasks]
+        return aggregate(results) # Aggregator
 
 ```
 
+In this repo, Health Tracker uses ROMA’s /analysis and /execute for richer language output. If ROMA returns a low-value “echo/placeholder” or is unreachable, Health Tracker falls back to local code.
+
+✨ Features
+ROMA-powered recursive task handling for smarter outputs
+
+Agents
+
+DataIngestionAgent – validates/normalizes inputs
+
+MetricsAnalysisAgent – computes basics + queries LLM for insights
+
+CoachingAgent – personalized, actionable tips (via OpenRouter)
+
+ReportingAgent – weekly summary stored to SQLite
+
+FastAPI with clean REST endpoints and Swagger docs
+
+SQLite persistence via Docker volume (./data/health.db)
+
+API Key guard for sensitive routes
+
+Dockerized one-command spin-up
+
+🚀 Quick Start
+1) Clone
+```
+git clone https://github.com/chiefmmorgs/Sentient-health-tracker-.git
+cd Sentient-health-tracker-
+```
+2) Environment
+```
+Create .env in the project root (keep it private; it’s in .gitignore):
+```
+# LLM access used by ROMA
+```
+OPENROUTER_API_KEY=sk-your-openrouter-key
+
+# Protects /reports (and optionally save actions on other endpoints)
+API_KEY=your-secret-key
+
+# Health Tracker DB (absolute path inside container)
+DB_URL=sqlite:////app/data/health.db
+
+```
+Generate a strong key:
+
+openssl rand -hex 32
+
+or python3 -c "import secrets; print(secrets.token_urlsafe(32))"
+
+Note: ROMA_URL is set in compose.yml to http://roma:5000 (internal Docker DNS).
+
+3) Run with Docker Compose
+```
+docker compose up -d --build
+# wait until API is live
+until curl -sSf http://127.0.0.1:8000/health >/dev/null; do echo "waiting..."; sleep 1; done
+```
 4) Test
 
-Health (protected):
-
-```bash
-
-curl -H "X-API-Key: your-secret-key" http://127.0.0.1:8000/health
+Health (protected by key):
+```
+curl -s http://127.0.0.1:8000/health -H "X-API-Key: $API_KEY" | jq .
 
 ```
 Weekly report:
-
 ```
-
-curl -X POST http://127.0.0.1:8000/weekly-report \
+# compute only (no save)
+curl -s -X POST http://127.0.0.1:8000/weekly-report \
   -H "Content-Type: application/json" \
-  -d '{"data":{"steps":72000,"sleep_hours":49,"workouts":4,"water_liters":14}}'
+  -d '{"data":{"steps":72000,"sleep_hours":49,"workouts":4,"water_liters":14}}' | jq .
 
-
+# compute + save (requires API key)
+curl -s -X POST "http://127.0.0.1:8000/weekly-report?save=true" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: $API_KEY" \
+  -d '{"data":{"steps":72000,"sleep_hours":49,"workouts":4,"water_liters":14}}' | jq .
 ```
-Open docs in your browser:
+
+Open docs:
 http://127.0.0.1:8000/docs
 
 🔗 Endpoints
 
-GET /health — API+DB status (requires X-API-Key)
+GET /health – API + ROMA heartbeat (requires X-API-Key)
 
-GET /roma-info — ROMA architecture summary
+GET /roma-info – (optional) ROMA architecture summary
 
-POST /analyze — Quick single-entry analysis
+POST /analyze – quick metrics analysis (JSON insights)
 
-POST /weekly-report — Full ROMA pipeline (ingest → metrics → coach → report)
+POST /weekly-report – full ROMA pipeline (ingest → metrics → coach → report)
 
-POST /chat — AI coaching on an input message
+POST /chat – AI coaching on an input message
 
-GET /reports — List saved reports (requires X-API-Key)
+GET /reports – list saved reports (requires key)
 
-GET /reports/{id} — Retrieve a saved report (requires X-API-Key)
+GET /reports/{id} – get a saved report (requires key)
 
+DELETE /reports/{id} – delete (requires key)
 
+(optional) GET /reports/export?fmt=json|csv – export (requires key)
 
-🧠 How It Works (ROMA)
+Save semantics: add ?save=true on /weekly-report, /analyze, /chat to persist the output.
+(You can require the key only when saving—see “Security Hardening” below.)
 
+🧠 How It Works (ROMA inside this app)
 ```
 flowchart LR
     A[User Request] --> B{Atomizer}
@@ -109,74 +185,82 @@ flowchart LR
     E3 --> E4[Reporting Agent]
     E & E1 & E2 & E3 & E4 --> F[Aggregator]
     F --> G[Response + (optional) Save to SQLite]
+
 ```
-Atomizer: decides if the task is atomic or needs decomposition.
+Atomizer: decides atomic vs. complex
 
-Planner: creates an ordered plan (ingest → metrics → coach → report).
+Planner: orders subtasks (ingest → metrics → coach → report)
 
-Executors: domain agents perform their part; Metrics/Coach/Report can call GPT via OpenRouter.
+Executors: domain agents (Metrics/Coach may invoke GPT via OpenRouter)
 
-Aggregator: merges results into the final response.
+Aggregator: merges outputs into the final response
 
+If ROMA returns a low-value “echo/placeholder” or errors, Health Tracker falls back to local logic:
+
+_fallback_weekly() – computes daily averages + short text summary
+
+analyze_health_locally() – structured JSON (flags, score, recommendations)
 
 🧪 Example Use Cases
 
-Personal Health Assistant – weekly summaries & advice.
+Personal Health Assistant – weekly summaries & advice
 
-Wellness App Backend – mobile/web apps can call these endpoints.
+Wellness App Backend – mobile/web clients call the endpoints
 
-Research / Learning – a concrete example of multi-agent orchestration.
+Multi-agent Reference – concrete example of ROMA orchestration
 
 Fork & Repurpose – swap health agents for finance, study, productivity, etc.
 
 🛠️ For Developers
 
-Fork it → build your own agent set in roma_agents/.
+Agents live in roma_agents/ (extend for new workflows)
 
-Extend the planner/aggregator for new workflows.
+Planner/Aggregator in roma_engine/ (customize pipelines)
 
-Persist reports with SQLite (mounted volume via ./data).
+Persistence via SQLite mounted at ./data
 
-Secure endpoints using the X-API-Key header.
+Guard sensitive endpoints with X-API-Key
 
-Deploy on a VPS: Docker + .env + reverse proxy (optional).
-
-
-Recommended contributions:
-
-Real wearable integrations (Fitbit/HealthKit/Garmin).
-
-Frontend dashboard (Next.js/React) calling this API.
-
-More agents (nutrition, recovery, stress).
+Easy to wire to a Telegram bot or small web front-end
 
 📦 Project Structure (core)
 ```
 .
-├── sentient_roma_api.py         # FastAPI entrypoint
-├── roma_engine/
-│   └── sentient_roma_runner.py  # ROMA runner/orchestration
-├── roma_agents/
-│   └── sentient_health_agents.py# Agents (ingest/metrics/coach/report)
-├── storage/
-│   └── db.py                    # SQLite helpers
-├── docker/
-│   ├── Dockerfile
-│   └── docker-compose.yml
+├── compose.yml                    # docker-compose (roma + health-tracker)
+├── Dockerfile                     # health-tracker image
+├── Dockerfile.roma                # ROMA image
+├── main.py                        # FastAPI app (endpoints, fallbacks, DB)
+├── roma_service.py                # ROMA Flask/ASGI service
+├── roma_engine/                   # ROMA runner/orchestration
+├── roma_agents/                   # Domain agents (ingest/metrics/coach/report)
 ├── requirements.txt
-├── data/                        # Mounted DB folder (persisted)
-└── LICENSE
+├── env.example                    # template for .env
+├── data/                          # host-mounted DB folder (health.db)
+└── static/                        # optional: reports.html admin page
 
 ```
 
-🔐 Security
+🔐 Security & Persistence
 
-Set API_KEY in .env to require X-API-Key for /health and /reports.
+API key protects /reports (and /health if enabled).
 
-Keep .env out of version control.
+Optional hardening: require key for save actions on /weekly-report, /analyze, /chat.
 
-If deploying publicly, put a reverse proxy (e.g., Nginx) with HTTPS.
+.env is not committed; rotate keys periodically.
 
-🧾 License
+SQLite database persists at ./data/health.db (bind mount).
 
-MIT — free to use, modify, and distribute. 
+Hardening example (save-only lock) in main.py:
+
+```
+
+from fastapi import Header, HTTPException
+
+@app.post("/weekly-report")
+async def weekly_report(..., save: bool = False, x_api_key: str = Header(None, alias="X-API-Key")):
+    if save and API_KEY and x_api_key != API_KEY:
+        raise HTTPException(401, "Invalid or missing API key")
+    ...
+# Do the same for /analyze and /chat
+```
+
