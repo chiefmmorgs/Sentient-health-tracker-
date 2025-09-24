@@ -101,10 +101,8 @@ async def _roma_execute(goal: str) -> Optional[str]:
 
 # ----------------- Local analysis helpers -----------------
 def analyze_health_locally(d: dict) -> dict:
-    """Return structured insights for typical metrics."""
     out = {"insights": [], "flags": [], "summary": {}}
 
-    # Resting heart rate (rHR)
     rhr = d.get("resting_hr")
     if isinstance(rhr, (int, float)):
         if rhr < 50:
@@ -120,7 +118,6 @@ def analyze_health_locally(d: dict) -> dict:
             out["flags"].append("resting_hr_high")
         out["summary"]["resting_hr"] = rhr
 
-    # HRV
     hrv = d.get("hrv")
     if isinstance(hrv, (int, float)):
         if hrv >= 70:
@@ -131,39 +128,31 @@ def analyze_health_locally(d: dict) -> dict:
             out["insights"].append("Low HRV—prioritize sleep, light activity, and hydration.")
             out["flags"].append("hrv_low")
         out["summary"]["hrv"] = hrv
-
-    # Calories
-    cals = d.get("calories")
+   cals = d.get("calories")
     if isinstance(cals, (int, float)):
         out["summary"]["calories_week"] = cals
         if cals < 10000:
             out["insights"].append("Weekly calorie burn seems low—more daily movement or longer sessions could help.")
             out["flags"].append("calories_low")
 
-    # Runs
     runs = d.get("runs")
     if isinstance(runs, (int, float)):
         runs = int(runs)
         out["summary"]["runs"] = runs
         if runs >= 3:
-            out["insights"].append("Great running frequency—maintain 1 easy + 1 quality + 1 long structure.")
+            out["insights"].append("Great running freq—maintain 1 easy + 1 quality + 1 long structure.")
         else:
             out["insights"].append("Consider aiming for 3 runs/week (easy, quality, long).")
             out["flags"].append("runs_low")
 
-    # Score: reward positives, penalize flags
     positives = 0
-    if isinstance(rhr, (int, float)) and 50 <= rhr <= 60:
-        positives += 1
-    if isinstance(hrv, (int, float)) and hrv >= 70:
-        positives += 1
-    if isinstance(runs, int) and runs >= 3:
-        positives += 1
-    score = 70 + 5 * positives - 10 * len(out["flags"])
+    if isinstance(rhr, (int, float)) and 50 <= rhr <= 60: positives += 1
+    if isinstance(hrv, (int, float)) and hrv >= 70: positives += 1
+    if isinstance(runs, int) and runs >= 3: positives += 1
+    score = 70 + 5*positives - 10*len(out["flags"])
     score = max(0, min(100, score))
-    out["score"] = score
+  ut["score"] = score
 
-    # Recommendations: fill to 3 unique lines
     recs = []
     if "hrv_low" in out["flags"]:
         recs.append("Prioritize 7–8h sleep, add a 10–15 min evening wind-down.")
@@ -176,17 +165,13 @@ def analyze_health_locally(d: dict) -> dict:
     generic = [
         "Keep up hydration and consistent bed/wake times.",
         "Add 5–10 minutes of mobility after workouts.",
-        "Take a short walk after meals when possible.",
+        "Take a short walk after meals when possible."
     ]
     for g in generic:
-        if len(recs) >= 3:
-            break
-        if g not in recs:
-            recs.append(g)
-
+        if len(recs) >= 3: break
+        if g not in recs: recs.append(g)
     out["recommendations"] = recs[:3]
     return out
-
 
 def _fallback_weekly(data: Dict[str, Any]) -> str:
     steps = float(data.get("steps", 0))

@@ -20,6 +20,10 @@ services:
     environment:
       - ROMA_URL=http://roma:5000
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - API_KEY=${API_KEY}
+      - DB_URL=sqlite:////app/data/health.db
+    volumes:
+      - ./data:/app/data
     depends_on:
       - roma
     networks:
