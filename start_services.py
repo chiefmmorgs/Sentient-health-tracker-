@@ -15,7 +15,7 @@ def run_roma_service():
 
 def run_main_app():
     """Run the main FastAPI application"""
-    print("Starting main FastAPI application on port 5000...")
+    print("Starting main FastAPI application on port 8000...")
     subprocess.run([sys.executable, "main.py"], check=False)
 
 if __name__ == "__main__":

@@ -17,7 +17,7 @@ export function SystemHub() {
     {
       name: 'ROMA Meta-Agent',
       status: romaStatus,
-      url: 'http://localhost:5000',
+      url: 'http://localhost:8000',
       description: 'Multi-agent framework for complex task execution',
       icon: BarChart3,
       color: 'blue',
@@ -25,7 +25,7 @@ export function SystemHub() {
     {
       name: 'Health Tracker',
       status: healthStatus,
-      url: 'http://localhost:5000',
+      url: 'http://localhost:8000',
       description: 'AI-powered health analysis and coaching',
       icon: Activity,
       color: 'green',
@@ -130,7 +130,7 @@ export function SystemHub() {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm">ROMA API</span>
-              <span className="text-sm font-semibold text-green-600">< 200ms</span>
+              <span className="text-sm font-semibold text-green-600">&lt; 200ms</span>
             </div>
           </div>
         </div>

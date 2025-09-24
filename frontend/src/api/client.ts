@@ -1,8 +1,8 @@
 import axios, { AxiosInstance } from 'axios';
 
 // Environment configuration
-const ROMA_API_URL = import.meta.env.VITE_ROMA_API_URL || 'http://localhost:5000';
-const HEALTH_API_URL = import.meta.env.VITE_HEALTH_API_URL || 'http://localhost:5000';
+const ROMA_API_URL = import.meta.env.VITE_ROMA_API_URL || 'http://localhost:8000';
+const HEALTH_API_URL = import.meta.env.VITE_HEALTH_API_URL || 'http://localhost:8000';
 const API_KEY = import.meta.env.VITE_API_KEY || 'demo-key-12345';
 
 // Create axios instances for different services
