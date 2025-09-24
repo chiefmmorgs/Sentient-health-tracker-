@@ -15,10 +15,10 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], all
 if os.path.isdir("static"):
     app.mount("/", StaticFiles(directory="static", html=True), name="static")
 
-ROMA_BASE = os.getenv("ROMA_URL", "http://roma:5000") + "/api/simple"
+ROMA_BASE = os.getenv("ROMA_URL", "http://localhost:3001") + "/api/simple"
 
 # Optional API key (protect /health and /reports, and you can enable for others)
-API_KEY = os.getenv("API_KEY", "")  # set in .env to activate protection
+API_KEY = os.getenv("API_KEY", "demo-key-12345")  # default demo key for Replit
 
 def require_api_key(x_api_key: str = Header(default=None, alias="X-API-Key")):
     if API_KEY and x_api_key != API_KEY:
@@ -29,7 +29,7 @@ def require_api_key(x_api_key: str = Header(default=None, alias="X-API-Key")):
 from sqlalchemy import create_engine, Column, Integer, String, Text, DateTime
 from sqlalchemy.orm import sessionmaker, declarative_base, Session
 
-DB_URL = os.getenv("DB_URL", "sqlite:///./health.db")
+DB_URL = os.getenv("DB_URL", "sqlite:///./data/health.db")
 engine = create_engine(DB_URL, connect_args={"check_same_thread": False} if DB_URL.startswith("sqlite") else {})
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 Base = declarative_base()
@@ -378,4 +378,4 @@ def delete_report(report_id: int, db: Session = Depends(get_db)):
 # ----------------- Entrypoint -----------------
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=5000)

@@ -32,5 +32,5 @@ def simple_analysis():
     return jsonify({"status":"ok","summary":"placeholder"})
 
 if __name__ == "__main__":
-    # default to 0.0.0.0:5000 unless you override in Dockerfile
-    app.run(host="0.0.0.0", port=5000)
+    # Run on port 3001 to avoid conflict with main app on port 5000
+    app.run(host="localhost", port=3001)
